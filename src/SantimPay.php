@@ -166,7 +166,7 @@ class SantimPay
             'Content-Type' => 'application/json; charset=UTF-8'
         );
         $body = array(
-            'Id' => $id,
+            'id' => $id,
             'merchantId' => $this->merchantId,
             'signedToken' => $token
         );
