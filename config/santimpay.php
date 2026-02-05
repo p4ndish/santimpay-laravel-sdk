@@ -5,6 +5,7 @@ return [
     'transaction_status_endpoint' => env('SANTIMPAY_TRANSACTION_STATUS_ENDPOINT', 'https://services.santimpay.com/api/v1/gateway/fetch-transaction-status'),
     'merchant_id' => env('SANTIMPAY_MERCHANT_ID', ''),
     'private_key_path' => env('SANTIMPAY_PRIVATE_KEY_PATH', ''),
+    'callback_public_key' => env('SANTIMPAY_CALLBACK_PUBLIC_KEY', ''),
     'success_url' => env('SANTIMPAY_SUCCESS_URL', ''),
     'failure_url' => env('SANTIMPAY_FAILURE_URL', ''),
     'notify_url' => env('SANTIMPAY_NOTIFY_URL', ''),

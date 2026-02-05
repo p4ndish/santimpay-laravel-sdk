@@ -22,6 +22,7 @@ class SantimPay
     protected int $retrySleepMs;
     protected string $initiate_endpoint;
     protected string $transaction_status_endpoint;
+    protected string $callback_public_key;
 
     public function __construct()
     {
@@ -37,6 +38,7 @@ class SantimPay
         $this->retrySleepMs = (int) Config::get('santimpay.retry_sleep_ms', 200);
         $this->initiate_endpoint = Config::get('santimpay.initiate_endpoint');
         $this->transaction_status_endpoint = Config::get('santimpay.transaction_status_endpoint');
+        $this->callback_public_key = Config::get('santimpay.callback_public_key');
     }
 
     public function generateMerchantTxnId(): string
@@ -190,6 +192,17 @@ class SantimPay
                 $e->getMessage(),
                 0,
             );
+        }
+    }
+
+    public function verifyWebhookSignature($signedToken)
+    {
+        
+        try { 
+            $decodedToken = JWT::decode($signedToken, $this->callback_public_key, ['ES256']);
+            return true;
+        } catch (\Throwable $e) {
+            return false;
         }
     }
 }
