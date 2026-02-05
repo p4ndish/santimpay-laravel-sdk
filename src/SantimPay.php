@@ -138,7 +138,7 @@ class SantimPay
         } catch (\Throwable $e) {
             throw new SantimPayException(
                 $e->getMessage(),
-                $response->status() ?? null,
+                0,
             );
         }
     }
@@ -159,30 +159,37 @@ class SantimPay
 
     public function checkTransactionStatus(string $id)
     {
+        try {
+            $token = $this->generateSignedTokenForGetTransaction($id);
 
-        $token = $this->generateSignedTokenForGetTransaction($id);
+            return Http::retry($this->retryAttempts, $this->retrySleepMs)
+                ->acceptJson()
+                ->asJson()
+                ->withHeaders([
+                    'Content-Type' => 'application/json; charset=UTF-8',
+                ])
+                ->post($this->transaction_status_endpoint, [
+                    'Id' => $id,
+                    'MerchantId' => $this->merchantId,
+                    'SignedToken' => $token,
+                ])
+                ->throw()
+                ->json();
+        } catch (RequestException $e) {
+            $response = $e->response;
+            $status = $response?->status() ?? 0;
+            $message = $response?->json('message')
+                ?? ($response?->body() ?: $e->getMessage());
 
-        $headers = array(
-            'Content-Type' => 'application/json; charset=UTF-8'
-        );
-        $body = array(
-            'id' => $id,
-            'merchantId' => $this->merchantId,
-            'signedToken' => $token
-        );
-
-
-
-        return Http::retry($this->retryAttempts, $this->retrySleepMs)
-            ->acceptJson()
-            ->post($this->transaction_status_endpoint, [
-                'headers' => $headers,
-                'body' => json_encode($body)
-            ])
-            ->throw()
-            ->json();
-
-
-
+            throw new SantimPayException(
+                $message,
+                (int) $status
+            );
+        } catch (\Throwable $e) {
+            throw new SantimPayException(
+                $e->getMessage(),
+                0,
+            );
+        }
     }
 }
